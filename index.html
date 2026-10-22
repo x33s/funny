@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎨 Funny - 创意微交互合集</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --card-bg: #ffffff;
+      --text-main: #111827;
+      --text-sub: #6b7280;
+      --accent: #ff7a45;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+      --shadow-lg: 0 12px 32px rgba(0,0,0,0.08);
+      --radius: 20px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* 顶部背景装饰 */
+    .hero-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 300px;
+      background: linear-gradient(135deg, rgba(255,154,90,0.1), rgba(255,122,69,0.05));
+      z-index: -1;
+      clip-path: polygon(0 0, 100% 0, 100% 60%, 0 100%);
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 80px 24px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    h1 {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #ff9a5a, #ff7a45);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    p.subtitle {
+      font-size: 16px;
+      color: var(--text-sub);
+      margin-bottom: 24px;
+    }
+
+    .links {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .links a {
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 8px 16px;
+      background: var(--card-bg);
+      border-radius: 100px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+      border: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .links a:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+      color: var(--accent);
+    }
+
+    /* 卡片网格 */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
+      border: 1px solid rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .card-img-wrapper {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      overflow: hidden;
+      background: #f0f0f0;
+      position: relative;
+    }
+
+    .card-img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .card:hover .card-img-wrapper img {
+      transform: scale(1.05);
+    }
+
+    .card-content {
+      padding: 20px 24px;
+    }
+
+    .card h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: var(--text-sub);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* 空状态提示 */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-sub);
+      border: 2px dashed #e5e7eb;
+      border-radius: var(--radius);
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero-bg"></div>
+
+  <div class="container">
+    <header>
+      <h1>Funny</h1>
+      <p class="subtitle">灵机一动，就把它复刻出来。</p>
+      <div class="links">
+        <a href="https://github.com/x33s/funny" target="_blank">⭐ GitHub</a>
+        <a href="https://github.com/x33s/funny/issues" target="_blank">🐛 Issue</a>
+      </div>
+    </header>
+
+    <main class="grid">
+      <!-- 卡片 1 -->
+      <a class="card" href="./chat-fab/">
+        <div class="card-img-wrapper">
+          <img src="./assets/previews/chat-fab.png" alt="Chat FAB Preview" onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg, #ff9a5a 0%, #ff7a45 100%)'">
+        </div>
+        <div class="card-content">
+          <h3>🐱 Chat FAB</h3>
+          <p>46px 毛玻璃悬浮球。眼睛跟着鼠标瞟，离远了变菱形眨眼，自带宠物气泡和爱心特效。</p>
+        </div>
+      </a>
+
+      <!-- 如果有新页面，复制上面的 <a> 标签，修改 href、图片路径、标题和描述即可 -->
+
+      <!-- 暂时注释掉的空状态，后续加卡片可以删掉这段 -->
+      <!-- 
+      <div class="empty-state">
+        更多有趣的微交互正在复刻中...
+      </div> 
+      -->
+    </main>
+  </div>
+
+</body>
+</html>
