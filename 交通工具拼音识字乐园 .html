@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交通工具拼音识字乐园</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --pinyin-shengmu: #0077b6; 
+            --pinyin-yunmu: #e63946;   
+            --text-color: #333333;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 10px 20px;
+            background: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-bottom: 4px solid #0077b6;
+        }
+        h1 {
+            color: #0077b6;
+            font-size: 2rem;
+            margin: 0 0 15px 0;
+            font-weight: bold;
+        }
+
+        .pinyin-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 10px;
+        }
+        .pinyin-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px; 
+            border: 2px solid #e0e0e0;
+            background: white;
+            color: var(--pinyin-yunmu);
+            font-size: 1.5rem;
+            font-weight: bold;
+            font-family: inherit;
+            box-shadow: 0 3px 0 #e0e0e0;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .pinyin-btn:hover { background: #f8f9fa; }
+        .pinyin-btn:active, .pinyin-btn.active {
+            transform: translateY(3px);
+            box-shadow: 0 0 0 #e0e0e0;
+            background: var(--pinyin-yunmu);
+            color: white;
+            border-color: var(--pinyin-yunmu);
+        }
+        .pinyin-btn.all-btn {
+            width: auto;
+            padding: 0 24px;
+            font-size: 1.1rem;
+            color: #fff;
+            background: #0077b6;
+            border-color: #0077b6;
+            box-shadow: 0 3px 0 #005a8a;
+        }
+        .pinyin-btn.all-btn.active {
+            background: #005a8a;
+            box-shadow: 0 0 0 #005a8a;
+        }
+
+        .filter-bar {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 10px 18px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            cursor: pointer;
+            background: white;
+            color: #555;
+            transition: all 0.2s;
+        }
+        .filter-btn.active {
+            background: #0077b6;
+            color: white;
+            border-color: #0077b6;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .vehicle-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px 10px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .vehicle-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 20%; bottom: 20%; width: 6px;
+            border-radius: 0 6px 6px 0;
+        }
+        .vehicle-card.road::before { background: #ffb703; }
+        .vehicle-card.rail::before { background: #219ebc; }
+        .vehicle-card.engineering::before { background: #fb8500; }
+        .vehicle-card.water_air::before { background: #8ecae6; }
+        .vehicle-card.life::before { background: #8ac926; }
+
+        .vehicle-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+
+        .vehicle-icon { font-size: 3rem; margin-bottom: 8px; }
+        
+        .pinyin-display {
+            font-size: 1.05rem;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .shengmu { color: var(--pinyin-shengmu); }
+        .yunmu { color: var(--pinyin-yunmu); }
+        
+        .vehicle-name {
+            font-size: 1.3rem; 
+            font-weight: bold;
+            color: #222;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+        .modal-card {
+            background: #fff;
+            width: 90%;
+            max-width: 450px;
+            border-radius: 20px;
+            padding: 35px 25px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+        .modal-overlay.active .modal-card { transform: scale(1); }
+
+        .close-btn {
+            position: absolute;
+            top: 15px; right: 20px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .close-btn:hover { color: #e63946; }
+
+        .modal-icon { font-size: 5rem; margin-bottom: 15px; }
+
+        .modal-pinyin {
+            font-size: 1.8rem;
+            letter-spacing: 3px;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .modal-title {
+            font-size: 2.8rem;
+            color: #222;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .modal-desc {
+            font-size: 1.2rem;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .audio-btn {
+            background: #0077b6;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 119, 182, 0.3);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 0 auto;
+            width: 80%;
+        }
+        .audio-btn:hover { background: #005a8a; }
+        .audio-btn:active { transform: scale(0.96); }
+        .audio-btn.playing {
+            background: #e63946;
+            box-shadow: 0 4px 10px rgba(230, 57, 70, 0.4);
+        }
+
+        @media (max-width: 600px) {
+            .grid-container { grid-template-columns: repeat(2, 1fr); padding: 15px; gap: 15px; }
+            .vehicle-icon { font-size: 2.5rem; }
+            .vehicle-name { font-size: 1.1rem; }
+            .pinyin-display { font-size: 0.9rem; }
+            h1 { font-size: 1.5rem; }
+            .modal-title { font-size: 2.2rem; }
+            .modal-pinyin { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🚗 交通工具拼音识字乐园 🚀</h1>
+        
+        <div class="pinyin-nav">
+            <button class="pinyin-btn all-btn active" onclick="filterPinyin('all', this)">全部</button>
+            <button class="pinyin-btn" onclick="filterPinyin('a', this)">a</button>
+            <button class="pinyin-btn" onclick="filterPinyin('o', this)">o</button>
+            <button class="pinyin-btn" onclick="filterPinyin('e', this)">e</button>
+            <button class="pinyin-btn" onclick="filterPinyin('i', this)">i</button>
+            <button class="pinyin-btn" onclick="filterPinyin('u', this)">u</button>
+            <button class="pinyin-btn" onclick="filterPinyin('v', this)">ü</button>
+        </div>
+
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterType('all', this)">全部</button>
+            <button class="filter-btn" onclick="filterType('road', this)">马路</button>
+            <button class="filter-btn" onclick="filterType('rail', this)">轨道</button>
+            <button class="filter-btn" onclick="filterType('engineering', this)">工地</button>
+            <button class="filter-btn" onclick="filterType('water_air', this)">水/空</button>
+            <button class="filter-btn" onclick="filterType('life', this)">生活</button>
+        </div>
+    </header>
+
+    <div class="grid-container" id="cardGrid"></div>
+
+    <div class="modal-overlay" id="modal" onclick="closeModal(event)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <div class="close-btn" onclick="closeModal()">×</div>
+            <div class="modal-icon" id="modalIcon">🚗</div>
+            <div class="modal-pinyin" id="modalPinyin"></div>
+            <div class="modal-title" id="modalTitle"></div>
+            <div class="modal-desc" id="modalDesc"></div>
+            <button class="audio-btn" id="audioBtn" onclick="playAudio()">
+                <span id="audioIcon">🔊</span> 跟我读
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 扩充至 56 种交通工具，新增“生活”类（如滑板车、婴儿车）
+        const vehicles = [
+            // --- 马路车辆 (19个) ---
+            { icon: '🚗', name: '汽车', pinyin_plain: 'qi che', pinyin_html: '<span class="shengmu">q</span><span class="yunmu">í</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '最常见的家用车，有四个轮子，跑得很快。', type: 'road' },
+            { icon: '🚕', name: '出租车', pinyin_plain: 'chu zu che', pinyin_html: '<span class="shengmu">ch</span><span class="yunmu">ū</span> <span class="shengmu">z</span><span class="yunmu">ū</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '车顶有个小灯牌，招一招手它就停下来。', type: 'road' },
+            { icon: '🚓', name: '警车', pinyin_plain: 'jing che', pinyin_html: '<span class="shengmu">j</span><span class="yunmu">ǐng</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '身上有蓝白条纹，会发出哇呜哇呜的声音。', type: 'road' },
+            { icon: '🚑', name: '救护车', pinyin_plain: 'jiu hu che', pinyin_html: '<span class="shengmu">j</span><span class="yunmu">i</span><span class="shengmu">ù</span> <span class="shengmu">h</span><span class="yunmu">ù</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '白色的车，上面有红十字，跑得很快去救人。', type: 'road' },
+            { icon: '🚒', name: '消防车', pinyin_plain: 'xiao fang che', pinyin_html: '<span class="shengmu">x</span><span class="yunmu">i</span><span class="shengmu">āo</span> <span class="shengmu">f</span><span class="yunmu">á</span><span class="shengmu">ng</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '红色的大块头，带着水枪去灭火。', type: 'road' },
+            { icon: '🚌', name: '公交车', pinyin_plain: 'gong jiao che', pinyin_html: '<span class="shengmu">g</span><span class="yunmu">ōng</span> <span class="shengmu">j</span><span class="yunmu">i</span><span class="shengmu">āo</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '大肚皮的公共汽车，能装好多好多人。', type: 'road' },
+            { icon: '🚌', name: '校车', pinyin_plain: 'xiao che', pinyin_html: '<span class="shengmu">x</span><span class="yunmu">i</span><span class="shengmu">ào</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '黄色的长鼻子车，每天接小朋友们去幼儿园。', type: 'road' },
+            { icon: '🚚', name: '货车', pinyin_plain: 'huo che', pinyin_html: '<span class="shengmu">h</span><span class="yunmu">u</span><span class="shengmu">ò</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '后面背着大箱子，专门帮我们运送货物。', type: 'road' },
+            { icon: '🛻', name: '皮卡', pinyin_plain: 'pi ka', pinyin_html: '<span class="shengmu">p</span><span class="yunmu">í</span> <span class="shengmu">k</span><span class="yunmu">ǎ</span>', desc: '前面坐人，后面有个大斗可以拉货。', type: 'road' },
+            { icon: '🛺', name: '三轮车', pinyin_plain: 'san lun che', pinyin_html: '<span class="shengmu">s</span><span class="yunmu">ān</span> <span class="shengmu">l</span><span class="yunmu">ún</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '三个轮子的小车，跑得慢但是很灵活。', type: 'road' },
+            { icon: '🚐', name: '面包车', pinyin_plain: 'mian bao che', pinyin_html: '<span class="shengmu">m</span><span class="yunmu">i</span><span class="shengmu">àn</span> <span class="shengmu">b</span><span class="yunmu">āo</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '长得像一块大面包，里面能坐好几个人。', type: 'road' },
+            { icon: '🚙', name: '吉普车', pinyin_plain: 'ji pu che', pinyin_html: '<span class="shengmu">j</span><span class="yunmu">í</span> <span class="shengmu">p</span><span class="yunmu">ǔ</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '底盘高高的，能爬坡，能走烂路。', type: 'road' },
+            { icon: '🏎️', name: '赛车', pinyin_plain: 'sai che', pinyin_html: '<span class="shengmu">s</span><span class="yunmu">ài</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '扁扁的，低低的，在赛道上跑得超级快！', type: 'road' },
+            { icon: '🚒', name: '洒水车', pinyin_plain: 'sa shui che', pinyin_html: '<span class="shengmu">s</span><span class="yunmu">ǎ</span> <span class="shengmu">sh</span><span class="yunmu">u</span><span class="shengmu">ǐ</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '边走边喷水，给马路洗澡，夏天很凉快。', type: 'road' },
+            { icon: '🚓', name: '巡逻车', pinyin_plain: 'xun luo che', pinyin_html: '<span class="shengmu">x</span><span class="yunmu">ún</span> <span class="shengmu">l</span><span class="yunmu">u</span><span class="shengmu">ó</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '警察叔叔开着它在街上保护大家。', type: 'road' },
+            { icon: '🚕', name: '网约车', pinyin_plain: 'wang yue che', pinyin_html: '<span class="shengmu">w</span><span class="yunmu">ǎng</span> <span class="shengmu">y</span><span class="yunmu">u</span><span class="shengmu">ē</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '用手机点一点，它就会来接你。', type: 'road' },
+            { icon: '🚙', name: '越野车', pinyin_plain: 'yue ye che', pinyin_html: '<span class="shengmu">y</span><span class="yunmu">u</span><span class="shengmu">è</span> <span class="shengmu">y</span><span class="yunmu">ě</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '力气很大，专门走泥巴路和山路的车。', type: 'road' },
+            { icon: '🚐', name: '房车', pinyin_plain: 'fang che', pinyin_html: '<span class="shengmu">f</span><span class="yunmu">áng</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '像个移动的小房子，里面有床可以睡觉。', type: 'road' },
+            { icon: '🚘', name: '新能源车', pinyin_plain: 'xin neng yuan che', pinyin_html: '<span class="shengmu">x</span><span class="yunmu">īn</span> <span class="shengmu">n</span><span class="yunmu">éng</span> <span class="shengmu">y</span><span class="yunmu">u</span><span class="shengmu">án</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '用电来跑的车，很安静，不冒黑烟。', type: 'road' },
+
+            // --- 轨道交通 (8个) ---
+            { icon: '🚄', name: '高铁', pinyin_plain: 'gao tie', pinyin_html: '<span class="shengmu">g</span><span class="yunmu">āo</span> <span class="shengmu">t</span><span class="yunmu">iě</span>', desc: '白色的长身子，在铁轨上跑得飞快。', type: 'rail' },
+            { icon: '🚇', name: '地铁', pinyin_plain: 'di tie', pinyin_html: '<span class="shengmu">d</span><span class="yunmu">ì</span> <span class="shengmu">t</span><span class="yunmu">iě</span>', desc: '在地下钻来钻去的钢铁地鼠，不怕堵车。', type: 'rail' },
+            { icon: '🚂', name: '火车', pinyin_plain: 'huo che', pinyin_html: '<span class="shengmu">h</span><span class="yunmu">u</span><span class="shengmu">ǒ</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '一边跑一边发出呜呜声，在铁轨上开。', type: 'rail' },
+            { icon: '🚋', name: '电车', pinyin_plain: 'dian che', pinyin_html: '<span class="shengmu">d</span><span class="yunmu">i</span><span class="shengmu">àn</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '头顶上有小辫子连着电线的车。', type: 'rail' },
+            { icon: '🚅', name: '动车', pinyin_plain: 'dong che', pinyin_html: '<span class="shengmu">d</span><span class="yunmu">òng</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '每一节车厢自己都有力气，跑得像子弹一样快。', type: 'rail' },
+            { icon: '🚈', name: '轻轨', pinyin_plain: 'qing gui', pinyin_html: '<span class="shengmu">q</span><span class="yunmu">īng</span> <span class="shengmu">g</span><span class="yunmu">u</span><span class="shengmu">ǐ</span>', desc: '经常在天桥上跑，像小火车一样。', type: 'rail' },
+            { icon: '🚝', name: '磁悬浮', pinyin_plain: 'ci xuan fu', pinyin_html: '<span class="shengmu">c</span><span class="yunmu">í</span> <span class="shengmu">x</span><span class="yunmu">u</span><span class="shengmu">án</span> <span class="shengmu">f</span><span class="yunmu">ú</span>', desc: '没有轮子的超级飞侠，浮在轨道上跑！', type: 'rail' },
+            { icon: '🚞', name: '绿皮车', pinyin_plain: 'lv pi che', pinyin_html: '<span class="shengmu">l</span><span class="yunmu">ǜ</span> <span class="shengmu">p</span><span class="yunmu">í</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '穿着绿色衣服的慢火车，可以开窗吹风。', type: 'rail' },
+
+            // --- 工程车 (10个) ---
+            { icon: '🚜', name: '挖掘机', pinyin_plain: 'wa jue ji', pinyin_html: '<span class="shengmu">w</span><span class="yunmu">ā</span> <span class="shengmu">j</span><span class="yunmu">u</span><span class="shengmu">é</span> <span class="shengmu">j</span><span class="yunmu">ī</span>', desc: '有长长的手臂和铲斗，会挖土。', type: 'engineering' },
+            { icon: '🚛', name: '搅拌车', pinyin_plain: 'jiao ban che', pinyin_html: '<span class="shengmu">j</span><span class="yunmu">i</span><span class="shengmu">ǎo</span> <span class="shengmu">b</span><span class="yunmu">àn</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '有个大圆肚子，把水泥搅得匀匀的。', type: 'engineering' },
+            { icon: '🏗️', name: '吊车', pinyin_plain: 'diao che', pinyin_html: '<span class="shengmu">d</span><span class="yunmu">i</span><span class="shengmu">ào</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '有个长长的吊臂，能把重东西提起来。', type: 'engineering' },
+            { icon: '🚧', name: '推土机', pinyin_plain: 'tui tu ji', pinyin_html: '<span class="shengmu">t</span><span class="yunmu">u</span><span class="shengmu">ī</span> <span class="shengmu">t</span><span class="yunmu">ǔ</span> <span class="shengmu">j</span><span class="yunmu">ī</span>', desc: '前面有个大铲子，力气超大，能把土推平。', type: 'engineering' },
+            { icon: '🚧', name: '压路机', pinyin_plain: 'ya lu ji', pinyin_html: '<span class="shengmu">y</span><span class="yunmu">ā</span> <span class="shengmu">l</span><span class="yunmu">ù</span> <span class="shengmu">j</span><span class="yunmu">ī</span>', desc: '有个圆圆的大滚轮，把马路压得平平的。', type: 'engineering' },
+            { icon: '🚜', name: '拖拉机', pinyin_plain: 'tuo la ji', pinyin_html: '<span class="shengmu">t</span><span class="yunmu">u</span><span class="shengmu">ō</span> <span class="shengmu">l</span><span class="yunmu">ā</span> <span class="shengmu">j</span><span class="yunmu">ī</span>', desc: '农民伯伯的好帮手，能拉着犁在田里干活。', type: 'engineering' },
+            { icon: '🪜', name: '云梯车', pinyin_plain: 'yun ti che', pinyin_html: '<span class="shengmu">y</span><span class="yunmu">ún</span> <span class="shengmu">t</span><span class="yunmu">ī</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '能伸出长长的梯子，把消防员送到高楼去。', type: 'engineering' },
+            { icon: '🗑️', name: '垃圾车', pinyin_plain: 'la ji che', pinyin_html: '<span class="shengmu">l</span><span class="yunmu">ā</span> <span class="shengmu">j</span><span class="yunmu">ī</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '把臭臭的垃圾吃掉，让街道变干净。', type: 'engineering' },
+            { icon: '⛽', name: '油罐车', pinyin_plain: 'you guan che', pinyin_html: '<span class="shengmu">y</span><span class="yunmu">óu</span> <span class="shengmu">g</span><span class="yunmu">u</span><span class="shengmu">àn</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '背上背着大圆筒，里面装满了汽油。', type: 'engineering' },
+            { icon: '🚧', name: '铲车', pinyin_plain: 'chan che', pinyin_html: '<span class="shengmu">ch</span><span class="yunmu">ǎn</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '前面有个大簸箕，专门把沙子铲到卡车里。', type: 'engineering' },
+
+            // --- 水/空 (10个) ---
+            { icon: '✈️', name: '飞机', pinyin_plain: 'fei ji', pinyin_html: '<span class="shengmu">f</span><span class="yunmu">ēi</span> <span class="shengmu">j</span><span class="yunmu">ī</span>', desc: '有白色的翅膀，能飞到云朵上面去。', type: 'water_air' },
+            { icon: '🚁', name: '直升机', pinyin_plain: 'zhi sheng ji', pinyin_html: '<span class="shengmu">zh</span><span class="yunmu">í</span> <span class="shengmu">sh</span><span class="yunmu">ēng</span> <span class="shengmu">j</span><span class="yunmu">ī</span>', desc: '头顶有个大风扇，可以在空中停住。', type: 'water_air' },
+            { icon: '⛴️', name: '轮船', pinyin_plain: 'lun chuan', pinyin_html: '<span class="shengmu">l</span><span class="yunmu">ún</span> <span class="shengmu">ch</span><span class="yunmu">u</span><span class="shengmu">án</span>', desc: '在水上开的大家伙，能运人也能运货。', type: 'water_air' },
+            { icon: '🚤', name: '快艇', pinyin_plain: 'kuai ting', pinyin_html: '<span class="shengmu">k</span><span class="yunmu">u</span><span class="shengmu">ài</span> <span class="shengmu">t</span><span class="yunmu">ǐng</span>', desc: '在水面上像箭一样飞驰的小船。', type: 'water_air' },
+            { icon: '🎈', name: '热气球', pinyin_plain: 're qi qiu', pinyin_html: '<span class="shengmu">r</span><span class="yunmu">è</span> <span class="shengmu">q</span><span class="yunmu">ì</span> <span class="shengmu">q</span><span class="yunmu">iú</span>', desc: '下面挂个篮子，用火加热空气飞起来。', type: 'water_air' },
+            { icon: '⛵', name: '帆船', pinyin_plain: 'fan chuan', pinyin_html: '<span class="shengmu">f</span><span class="yunmu">ān</span> <span class="shengmu">ch</span><span class="yunmu">u</span><span class="shengmu">án</span>', desc: '靠风把帆吹得鼓鼓的来前进。', type: 'water_air' },
+            { icon: '🛩️', name: '无人机', pinyin_plain: 'wu ren ji', pinyin_html: '<span class="shengmu">w</span><span class="yunmu">ú</span> <span class="shengmu">r</span><span class="yunmu">é</span><span class="shengmu">n</span> <span class="shengmu">j</span><span class="yunmu">ī</span>', desc: '没有驾驶员，靠遥控器在天上飞，能拍照。', type: 'water_air' },
+            { icon: '🚢', name: '大游轮', pinyin_plain: 'da you lun', pinyin_html: '<span class="shengmu">d</span><span class="yunmu">à</span> <span class="shengmu">y</span><span class="yunmu">óu</span> <span class="shengmu">l</span><span class="yunmu">ún</span>', desc: '海上的大酒店，很大很大，可以在上面玩好几天。', type: 'water_air' },
+            { icon: '🛶', name: '小木船', pinyin_plain: 'xiao mu chuan', pinyin_html: '<span class="shengmu">x</span><span class="yunmu">i</span><span class="shengmu">ǎo</span> <span class="shengmu">m</span><span class="yunmu">ù</span> <span class="shengmu">ch</span><span class="yunmu">u</span><span class="shengmu">án</span>', desc: '在公园的湖里慢慢划，很悠闲。', type: 'water_air' },
+            { icon: '🚀', name: '火箭', pinyin_plain: 'huo jian', pinyin_html: '<span class="shengmu">h</span><span class="yunmu">u</span><span class="shengmu">ǒ</span> <span class="shengmu">j</span><span class="yunmu">i</span><span class="shengmu">àn</span>', desc: '超级厉害，能冲出地球，飞到太空里去！', type: 'water_air' },
+
+            // --- 生活里的车 (9个) ---
+            { icon: '🛴', name: '滑板车', pinyin_plain: 'hua ban che', pinyin_html: '<span class="shengmu">h</span><span class="yunmu">u</span><span class="shengmu">á</span> <span class="shengmu">b</span><span class="yunmu">ǎn</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '一只脚踩着，另一只脚蹬地，在小区里玩。', type: 'life' },
+            { icon: '🚲', name: '自行车', pinyin_plain: 'zi xing che', pinyin_html: '<span class="shengmu">z</span><span class="yunmu">ì</span> <span class="shengmu">x</span><span class="yunmu">í</span><span class="shengmu">ng</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '用脚踩踏板，两个轮子转呀转，很环保。', type: 'life' },
+            { icon: '🛵', name: '电动车', pinyin_plain: 'dian dong che', pinyin_html: '<span class="shengmu">d</span><span class="yunmu">i</span><span class="shengmu">àn</span> <span class="shengmu">d</span><span class="yunmu">òng</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '不用踩，拧一下把手就能跑。', type: 'life' },
+            { icon: '🏍️', name: '摩托车', pinyin_plain: 'mo tuo che', pinyin_html: '<span class="shengmu">m</span><span class="yunmu">ó</span> <span class="shengmu">t</span><span class="yunmu">u</span><span class="shengmu">ō</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '跑得很快，会发出“突突突”的声音。', type: 'life' },
+            { icon: '👶', name: '婴儿车', pinyin_plain: 'ying er che', pinyin_html: '<span class="shengmu">y</span><span class="yunmu">īng</span> <span class="shengmu">ér</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '小宝宝坐在里面，妈妈推着散步。', type: 'life' },
+            { icon: '🛒', name: '购物车', pinyin_plain: 'gou wu che', pinyin_html: '<span class="shengmu">g</span><span class="yunmu">òu</span> <span class="shengmu">w</span><span class="yunmu">ù</span> <span class="shengmu">ch</span><span class="yunmu">ē</span>', desc: '在超市里推着它，把好吃的都装进去。', type: 'life' },
+            { icon: '🧳', name: '行李箱', pinyin_plain: 'xing li xiang', pinyin_html: '<span class="shengmu">x</span><span class="yunmu">í</span><span class="shengmu">ng</span> <span class="shengmu">l</span><span class="yunmu">ǐ</span> <span class="shengmu">x</span><span class="yunmu">i</span><span class="shengmu">āng</span>', desc: '下面有小轮子，出门旅行拉着它很方便。', type: 'life' },
+            { icon: '🛼', name: '轮滑鞋', pinyin_plain: 'lun hua xie', pinyin_html: '<span class="shengmu">l</span><span class="yunmu">ún</span> <span class="shengmu">h</span><span class="yunmu">u</span><span class="shengmu">á</span> <span class="shengmu">x</span><span class="yunmu">i</span><span class="shengmu">é</span>', desc: '鞋底有轮子，穿上它可以在广场上滑行。', type: 'life' },
+            { icon: '🛹', name: '滑板', pinyin_plain: 'hua ban', pinyin_html: '<span class="shengmu">h</span><span class="yunmu">u</span><span class="shengmu">á</span> <span class="shengmu">b</span><span class="yunmu">ǎn</span>', desc: '一块带轮子的板子，大哥哥们喜欢玩。', type: 'life' }
+        ];
+
+        let currentPinyin = 'all';
+        let currentType = 'all';
+
+        const grid = document.getElementById('cardGrid');
+        const modal = document.getElementById('modal');
+        const audioBtn = document.getElementById('audioBtn');
+
+        function render() {
+            grid.innerHTML = '';
+            vehicles.forEach(v => {
+                let matchPinyin = true;
+                if (currentPinyin !== 'all') {
+                    let targetPinyin = currentPinyin === 'v' ? 'v' : currentPinyin;
+                    // 替换 ü 为 v 进行匹配
+                    let plainPinyin = v.pinyin_plain.replace(/ü/g, 'v');
+                    matchPinyin = plainPinyin.includes(targetPinyin);
+                }
+                let matchType = (currentType === 'all' || v.type === currentType);
+
+                if (matchPinyin && matchType) {
+                    const card = document.createElement('div');
+                    card.className = `vehicle-card ${v.type}`;
+                    card.innerHTML = `
+                        <div class="vehicle-icon">${v.icon}</div>
+                        <div class="pinyin-display">${v.pinyin_html}</div>
+                        <div class="vehicle-name">${v.name}</div>
+                    `;
+                    card.onclick = () => openModal(v);
+                    grid.appendChild(card);
+                }
+            });
+            
+            if (grid.innerHTML === '') {
+                grid.innerHTML = '<h2 style="grid-column: 1/-1; text-align: center; color: #999; margin-top: 50px;">没有找到哦，换一个试试吧！</h2>';
+            }
+        }
+
+        function filterPinyin(pinyin, btn) {
+            document.querySelectorAll('.pinyin-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentPinyin = pinyin;
+            render();
+        }
+
+        function filterType(type, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentType = type;
+            render();
+        }
+
+        function openModal(v) {
+            document.getElementById('modalIcon').innerText = v.icon;
+            document.getElementById('modalPinyin').innerHTML = v.pinyin_html;
+            document.getElementById('modalTitle').innerText = v.name;
+            document.getElementById('modalDesc').innerText = v.desc;
+            modal.classList.add('active');
+            
+            audioBtn.dataset.currentName = v.name;
+            audioBtn.dataset.currentDesc = v.desc;
+            
+            setTimeout(() => {
+                playAudio();
+            }, 100);
+        }
+
+        function closeModal(e) {
+            if(e && e.target !== modal && !e.target.classList.contains('close-btn')) return;
+            modal.classList.remove('active');
+            window.speechSynthesis.cancel();
+            audioBtn.classList.remove('playing');
+            document.getElementById('audioIcon').innerText = '🔊';
+        }
+
+        function playAudio() {
+            if (!('speechSynthesis' in window)) {
+                alert('您的浏览器不支持语音朗读功能，请换用 Chrome 或 Edge 浏览器。');
+                return;
+            }
+            window.speechSynthesis.cancel(); 
+            
+            const titleText = audioBtn.dataset.currentName;
+            const descText = audioBtn.dataset.currentDesc;
+            
+            if (!titleText) return;
+
+            const speakText = `${titleText}。${descText}`;
+            
+            const utterance = new SpeechSynthesisUtterance(speakText);
+            utterance.lang = 'zh-CN';
+            utterance.rate = 0.85;    
+            utterance.pitch = 1.1;    
+
+            const voices = window.speechSynthesis.getVoices();
+            const zhVoice = voices.find(voice => voice.lang.includes('zh-CN') && voice.name.includes('Xiaoxiao')) || 
+                            voices.find(voice => voice.lang.includes('zh-CN')) ||
+                            voices.find(voice => voice.lang.includes('zh'));
+            
+            if (zhVoice) {
+                utterance.voice = zhVoice;
+            }
+
+            audioBtn.classList.add('playing');
+            document.getElementById('audioIcon').innerText = '🔉';
+
+            utterance.onend = () => {
+                audioBtn.classList.remove('playing');
+                document.getElementById('audioIcon').innerText = '🔊';
+            };
+            
+            utterance.onerror = (e) => {
+                console.error("播放出错:", e);
+                audioBtn.classList.remove('playing');
+                document.getElementById('audioIcon').innerText = '🔊';
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        if (window.speechSynthesis) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                window.speechSynthesis.getVoices();
+            };
+        }
+
+        render();
+    </script>
+</body>
+</html>
