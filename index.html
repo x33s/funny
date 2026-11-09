@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎨 Funny - 创意微交互合集</title>
+  <title>🧸 幼儿启蒙小乐园</title>
   <style>
     :root {
       --bg: #f7f8fa;
@@ -92,71 +92,64 @@
       color: var(--accent);
     }
 
-    /* 卡片网格 */
+    /* 卡片网格：小尺寸紧凑卡片 */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 24px;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
     }
 
     .card {
       background: var(--card-bg);
-      border-radius: var(--radius);
-      overflow: hidden;
+      border-radius: 14px;
+      padding: 14px 16px;
       text-decoration: none;
       color: inherit;
       box-shadow: var(--shadow-sm);
-      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
+      transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
       border: 1px solid rgba(0,0,0,0.04);
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      gap: 12px;
     }
 
     .card:hover {
-      transform: translateY(-6px);
+      transform: translateY(-3px);
       box-shadow: var(--shadow-lg);
     }
 
-    .card-img-wrapper {
-      width: 100%;
-      aspect-ratio: 16 / 10;
-      overflow: hidden;
-      background: #f0f0f0;
-      position: relative;
+    .card-icon {
+      flex: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      background: linear-gradient(135deg, rgba(255,154,90,0.18), rgba(255,122,69,0.12));
     }
 
-    .card-img-wrapper img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.4s ease;
-    }
-
-    .card:hover .card-img-wrapper img {
-      transform: scale(1.05);
-    }
-
-    .card-content {
-      padding: 20px 24px;
+    .card-text {
+      min-width: 0;
     }
 
     .card h3 {
-      font-size: 18px;
+      font-size: 14px;
       font-weight: 600;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .card p {
-      font-size: 14px;
+      font-size: 12px;
       color: var(--text-sub);
-      line-height: 1.5;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
+      line-height: 1.4;
+      white-space: nowrap;
       overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     /* 空状态提示 */
@@ -177,8 +170,8 @@
 
   <div class="container">
     <header>
-      <h1>Funny</h1>
-      <p class="subtitle">灵机一动，就把它复刻出来。</p>
+      <h1>🧸 幼儿启蒙小乐园</h1>
+      <p class="subtitle">陪孩子一起点一点、认一认、读一读。</p>
       <div class="links">
         <a href="https://github.com/x33s/funny" target="_blank">⭐ GitHub</a>
         <a href="https://github.com/x33s/funny/issues" target="_blank">🐛 Issue</a>
@@ -188,26 +181,40 @@
     <main class="grid">
       <!-- 卡片 1 -->
       <a class="card" href="./chat-fab/">
-        <div class="card-img-wrapper">
-          <img src="./assets/previews/chat-fab.png" alt="Chat FAB Preview" onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg, #ff9a5a 0%, #ff7a45 100%)'">
-        </div>
-        <div class="card-content">
-          <h3>🐱 Chat FAB</h3>
-          <p>46px 毛玻璃悬浮球。眼睛跟着鼠标瞟，离远了变菱形眨眼，自带宠物气泡和爱心特效。</p>
+        <div class="card-icon">🐱</div>
+        <div class="card-text">
+          <h3>Chat FAB</h3>
+          <p>毛玻璃悬浮球 · 眼睛跟随鼠标</p>
         </div>
       </a>
 
-        <a class="card" href="./交通工具拼音识字乐园 .html/">
-        <div class="card-img-wrapper">
-          <img src="./assets/previews/chat-fab.png" alt="Chat FAB Preview" onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg, #ff9a5a 0%, #ff7a45 100%)'">
-        </div>
-        <div class="card-content">
-          <h3>🐱 Chat FAB</h3>
-          <p>交通工具拼音识字乐园</p>
+      <!-- 卡片 2 -->
+      <a class="card" href="./交通工具拼音识字乐园/">
+        <div class="card-icon">🚌</div>
+        <div class="card-text">
+          <h3>交通工具拼音识字乐园</h3>
+          <p>看图识车 · 拼音认读</p>
         </div>
       </a>
 
-      <!-- 如果有新页面，复制上面的 <a> 标签，修改 href、图片路径、标题和描述即可 -->
+
+       <a class="card" href="./math/">
+        <div class="card-icon">数学</div>
+        <div class="card-text">
+          <h3>数学</h3>
+          <p>数学算术</p>
+        </div>
+      </a>
+
+      <a class="card" href="./poem/">
+        <div class="card-icon">古诗</div>
+        <div class="card-text">
+          <h3>古诗</h3>
+          <p>古诗 读</p>
+        </div>
+      </a>
+
+      <!-- 如果有新页面，复制上面的 <a> 标签，修改 href、图标、标题和描述即可 -->
 
       <!-- 暂时注释掉的空状态，后续加卡片可以删掉这段 -->
       <!-- 
