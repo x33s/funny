@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>全部汉字 · 总览</title>
+<style>
+  :root{
+    --bg:#fdf6ec;
+    --ink:#3d2b1f;
+    --sub:#a89582;
+    --accent:#ff8a3d;
+    --accent2:#ffb347;
+    --green:#4caf7a;
+    --green-dark:#2e7d54;
+    --card:#fff;
+    --shadow:0 3px 0 #eadbc9;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0;min-height:100vh;
+    font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+    background:var(--bg);color:var(--ink);
+    padding:14px 12px 60px;
+  }
+  .wrap{max-width:820px;margin:0 auto;}
+
+  /* 顶部 */
+  .head{text-align:center;padding:8px 0 6px;}
+  .head h1{font-size:22px;margin:0 0 4px;}
+  .head p{font-size:12px;color:var(--sub);margin:0;}
+  .legend{
+    display:flex;gap:14px;justify-content:center;
+    margin-top:8px;font-size:11px;color:var(--sub);
+  }
+  .legend span{display:inline-flex;align-items:center;gap:4px;}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block;}
+  .dot-new{background:#fff;border:1.5px solid #eadbc9;}
+  .dot-learned{background:#eef7f2;border:1.5px solid #b8e0c8;}
+
+  /* 搜索 + 继续 */
+  .search-row{
+    display:flex;gap:8px;margin:14px 0 4px;align-items:stretch;
+  }
+  .search-box{
+    flex:1;display:flex;align-items:center;gap:6px;
+    background:#fff;border-radius:14px;padding:0 12px;
+    box-shadow:var(--shadow);height:46px;min-width:0;
+  }
+  .search-box span{font-size:15px;color:var(--sub);}
+  .search-box input{
+    flex:1;border:none;outline:none;background:transparent;
+    font-size:14px;font-family:inherit;color:var(--ink);
+    min-width:0;height:100%;
+  }
+  .search-box input::placeholder{color:#c4b5a5;}
+  .continue{
+    border:none;border-radius:14px;padding:0 18px;height:46px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff;font-size:13px;font-weight:700;font-family:inherit;
+    box-shadow:0 3px 0 #d95f18;cursor:pointer;white-space:nowrap;
+  }
+  .continue:active{transform:translateY(2px);box-shadow:0 1px 0 #d95f18;}
+
+  /* 过滤 chip 行 */
+  .chip-row{
+    display:flex;flex-wrap:wrap;gap:6px;justify-content:center;
+    margin:8px 0;
+  }
+  .chip-row button{
+    border:none;border-radius:999px;padding:7px 13px;
+    font-size:12px;font-weight:700;font-family:inherit;
+    background:#fff;color:var(--ink);
+    box-shadow:var(--shadow);cursor:pointer;transition:.12s;
+    white-space:nowrap;
+  }
+  .chip-row button:active{transform:translateY(2px);box-shadow:0 1px 0 #eadbc9;}
+  .chip-row button.active{
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff;box-shadow:0 3px 0 #d95f18;
+  }
+  .chip-row.tight button{padding:6px 10px;font-size:12px;min-width:36px;}
+
+  /* 分组 */
+  .group{
+    margin-bottom:18px;
+    content-visibility:auto;
+    contain-intrinsic-size:auto 260px;
+  }
+  .group-title{
+    display:flex;align-items:baseline;gap:8px;
+    font-size:14px;font-weight:800;color:var(--ink);
+    padding:4px 4px 10px;margin:0;
+  }
+  .group-title .sub{font-size:11px;color:var(--sub);font-weight:600;}
+  .group-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(68px,1fr));
+    gap:8px;
+  }
+
+  /* 字格 */
+  .cell{
+    position:relative;
+    background:var(--card);border-radius:16px;
+    padding:10px 4px 8px;text-align:center;
+    text-decoration:none;color:var(--ink);
+    box-shadow:var(--shadow);
+    transition:transform .12s, box-shadow .12s, background .2s;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    min-height:76px;justify-content:center;
+  }
+  .cell:active{transform:translateY(3px);box-shadow:none;}
+  .cell .h{font-size:30px;font-weight:800;line-height:1.1;color:#2f2117;}
+  .cell .p{font-size:10px;color:var(--accent);font-weight:600;min-height:12px;}
+  .cell.learned{background:#eef7f2;box-shadow:0 3px 0 #c9e4d6;}
+  .cell.learned .h{color:var(--green-dark);}
+
+  .empty-tip{
+    text-align:center;font-size:13px;color:var(--sub);
+    padding:50px 20px;line-height:1.8;
+  }
+
+  /* 回到顶部 */
+  .to-top{
+    position:fixed;right:16px;bottom:20px;
+    width:52px;height:52px;border-radius:50%;
+    border:none;background:#fff;color:var(--accent);
+    font-size:22px;font-weight:800;font-family:inherit;
+    box-shadow:0 4px 14px rgba(140,100,60,.2);
+    cursor:pointer;opacity:0;pointer-events:none;
+    transition:opacity .2s, transform .2s;z-index:20;
+  }
+  .to-top.show{opacity:1;pointer-events:auto;}
+  .to-top:active{transform:scale(.92);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <h1>📚 全部汉字</h1>
+    <p id="totalTip">加载中…</p>
+    <div class="legend">
+      <span><i class="dot dot-new"></i>未学</span>
+      <span><i class="dot dot-learned"></i>已学</span>
+    </div>
+  </div>
+
+  <div class="search-row">
+    <div class="search-box">
+      <span>🔍</span>
+      <input id="searchInput" type="search" placeholder="搜汉字 / 拼音 / 组词…" autocomplete="off">
+    </div>
+    <button class="continue" id="continueBtn">继续学习 →</button>
+  </div>
+
+  <div class="chip-row" id="stageTabs"></div>
+  <div class="chip-row" id="gradeTabs"></div>
+  <div class="chip-row tight" id="initialTabs"></div>
+  <div class="chip-row" id="filterTabs"></div>
+  <div class="chip-row" id="groupTabs"></div>
+
+  <main id="grid"></main>
+
+</div>
+
+<button class="to-top" id="toTop" aria-label="回到顶部">↑</button>
+
+<script src="chars.js"></script>
+<script>
+/* ============================================================
+   安全读取 CHARS
+   ============================================================ */
+const ALL = (typeof CHARS !== 'undefined' && Array.isArray(CHARS)) ? CHARS : [];
+
+/* ============================================================
+   存储：只读已学
+   ============================================================ */
+function getSet(key){
+  try{
+    const v = JSON.parse(localStorage.getItem(key) || '[]');
+    return new Set(Array.isArray(v) ? v : []);
+  }catch(e){
+    return new Set();
+  }
+}
+
+/* ============================================================
+   分段兼容
+   ============================================================ */
+function stageOf(c){
+  if(c.stage) return c.stage;
+  if(c.grade){
+    if(c.grade <= 2) return 1;
+    if(c.grade <= 4) return 2;
+    return 3;
+  }
+  return 3;
+}
+const STAGE_NAMES = {1:'启蒙', 2:'生活常用', 3:'进阶'};
+
+/* ============================================================
+   声母
+   ============================================================ */
+const INITIALS = ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
+const INITIALS_SORTED = [...INITIALS].sort((a,b) => b.length - a.length);
+
+function getInitial(pinyin){
+  if(!pinyin) return '';
+  const first = pinyin.trim().split(/\s+/)[0].toLowerCase();
+  for(const ini of INITIALS_SORTED){
+    if(first.startsWith(ini)) return ini;
+  }
+  return '';
+}
+
+/* ============================================================
+   状态
+   ============================================================ */
+let currentStage   = 0;
+let currentGrade   = 'all';
+let currentInitial = 'all';
+let filter         = 'all';   // all | new | learned
+let groupBy        = 'day';
+let keyword        = '';
+
+/* ============================================================
+   分组
+   ============================================================ */
+function buildGroups(list, learnedSet){
+  if(!list.length) return [];
+
+  if(groupBy === 'day'){
+    const map = new Map();
+    list.forEach(c => {
+      const day = Math.floor(((c.id || 1) - 1) / 10) + 1;
+      if(!map.has(day)) map.set(day, []);
+      map.get(day).push(c);
+    });
+
+    return [...map.keys()].sort((a,b) => a - b).map(day => {
+      const chars = map.get(day);
+      const learnedInDay = chars.filter(c => learnedSet.has(c.id)).length;
+      return {
+        key: 'day-' + day,
+        title: `第 ${day} 天`,
+        sub: `已学 ${learnedInDay} / ${chars.length}`,
+        chars
+      };
+    });
+  }
+
+  const map = new Map();
+  [...list].sort((a,b) => (a.p||'').localeCompare(b.p||'','zh')).forEach(c => {
+    const letter = (c.p && c.p.length ? c.p[0] : '#').toUpperCase();
+    if(!map.has(letter)) map.set(letter, []);
+    map.get(letter).push(c);
+  });
+
+  return [...map.keys()].sort().map(letter => ({
+    key: 'p-' + letter,
+    title: letter,
+    sub: `${map.get(letter).length} 字`,
+    chars: map.get(letter)
+  }));
+}
+
+/* ============================================================
+   渲染
+   ============================================================ */
+function render(){
+  const grid = document.getElementById('grid');
+  const learnedSet = getSet('learnedChars');
+
+  if(!ALL.length){
+    document.getElementById('totalTip').textContent = '还没有字库';
+    grid.innerHTML = '<div class="empty-tip">还没有字库。<br>请先运行 generate.js 生成 chars.js。</div>';
+    return;
+  }
+
+  let list = ALL.slice();
+  if(currentStage) list = list.filter(c => stageOf(c) === currentStage);
+
+  if(currentGrade !== 'all'){
+    if(currentGrade === 'none') list = list.filter(c => !c.grade);
+    else list = list.filter(c => c.grade === currentGrade);
+  }
+
+  if(currentInitial !== 'all'){
+    if(currentInitial === 'zero') list = list.filter(c => getInitial(c.p) === '');
+    else list = list.filter(c => getInitial(c.p) === currentInitial);
+  }
+
+  const kw = keyword.trim().toLowerCase();
+  if(kw){
+    list = list.filter(c =>
+      (c.h && c.h.includes(kw)) ||
+      (c.p && c.p.toLowerCase().includes(kw)) ||
+      (c.w && c.w.includes(kw))
+    );
+  }
+
+  if(filter === 'new')          list = list.filter(c => !learnedSet.has(c.id));
+  else if(filter === 'learned') list = list.filter(c => learnedSet.has(c.id));
+
+  const parts = [`共 ${ALL.length} 字`];
+  if(list.length !== ALL.length) parts.push(`当前 ${list.length} 字`);
+  parts.push(`已学 ${learnedSet.size}`);
+  document.getElementById('totalTip').textContent = parts.join(' · ');
+
+  const groups = buildGroups(list, learnedSet);
+
+  if(!groups.length){
+    grid.innerHTML = '<div class="empty-tip">没有找到符合条件的字。<br>换个关键词或筛选试试。</div>';
+    return;
+  }
+
+  const frag = document.createDocumentFragment();
+
+  groups.forEach(g => {
+    const section = document.createElement('section');
+    section.className = 'group';
+
+    const title = document.createElement('h2');
+    title.className = 'group-title';
+    title.innerHTML = `<span>${g.title}</span><span class="sub">${g.sub}</span>`;
+    section.appendChild(title);
+
+    const gd = document.createElement('div');
+    gd.className = 'group-grid';
+
+    g.chars.forEach(c => {
+      const learned = learnedSet.has(c.id);
+      const a = document.createElement('a');
+      a.className = 'cell' + (learned ? ' learned' : '');
+      a.href = `learn.html?id=${c.id}`;
+      a.innerHTML = `
+        <span class="h">${c.h}</span>
+        <span class="p">${c.p || ''}</span>
+      `;
+      gd.appendChild(a);
+    });
+
+    section.appendChild(gd);
+    frag.appendChild(section);
+  });
+
+  grid.innerHTML = '';
+  grid.appendChild(frag);
+}
+
+/* ============================================================
+   标签渲染
+   ============================================================ */
+function makeChipRow(boxId, items, current, onPick){
+  const box = document.getElementById(boxId);
+  box.innerHTML = '';
+  items.forEach(it => {
+    const b = document.createElement('button');
+    b.textContent = it.name;
+    if(String(current) === String(it.k)) b.className = 'active';
+    b.onclick = () => onPick(it.k);
+    box.appendChild(b);
+  });
+}
+
+function renderStageTabs(){
+  const items = [{k:0, name:`全部 ${ALL.length}`}];
+  [1,2,3].forEach(s => {
+    const n = ALL.filter(c => stageOf(c) === s).length;
+    if(n) items.push({k:s, name:`${STAGE_NAMES[s]} ${n}`});
+  });
+  makeChipRow('stageTabs', items, currentStage, k => {
+    currentStage = k;
+    renderStageTabs();
+    render();
+  });
+}
+
+function renderGradeTabs(){
+  const items = [{k:'all', name:'全部年级'}];
+  for(let g = 1; g <= 6; g++){
+    if(ALL.some(c => c.grade === g)) items.push({k:g, name:`${g}年级`});
+  }
+  if(ALL.some(c => !c.grade)) items.push({k:'none', name:'未分级'});
+  makeChipRow('gradeTabs', items, currentGrade, k => {
+    currentGrade = k;
+    renderGradeTabs();
+    render();
+  });
+}
+
+function renderInitialTabs(){
+  const items = [{k:'all', name:'全部声母'}];
+  INITIALS.forEach(ini => items.push({k:ini, name:ini}));
+  if(ALL.some(c => getInitial(c.p) === '')) items.push({k:'zero', name:'零声母'});
+  makeChipRow('initialTabs', items, currentInitial, k => {
+    currentInitial = k;
+    renderInitialTabs();
+    render();
+  });
+}
+
+function renderFilterTabs(){
+  const items = [
+    {k:'all', name:'全部'},
+    {k:'new', name:'未学'},
+    {k:'learned', name:'已学'}
+  ];
+  makeChipRow('filterTabs', items, filter, k => {
+    filter = k;
+    renderFilterTabs();
+    render();
+  });
+}
+
+function renderGroupTabs(){
+  const items = [
+    {k:'day', name:'按天'},
+    {k:'pinyin', name:'按拼音'}
+  ];
+  makeChipRow('groupTabs', items, groupBy, k => {
+    groupBy = k;
+    renderGroupTabs();
+    render();
+  });
+}
+
+/* ============================================================
+   继续学习
+   ============================================================ */
+function goContinue(){
+  const learned = getSet('learnedChars');
+  const next = ALL.find(c => !learned.has(c.id));
+  if(next){
+    location.href = `learn.html?id=${next.id}`;
+  } else {
+    alert('全部学完啦！🎉');
+  }
+}
+
+/* ============================================================
+   搜索（防抖）
+   ============================================================ */
+let searchTimer = null;
+document.getElementById('searchInput').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  const val = e.target.value;
+  searchTimer = setTimeout(() => {
+    keyword = val;
+    render();
+  }, 200);
+});
+
+/* ============================================================
+   回到顶部
+   ============================================================ */
+const toTop = document.getElementById('toTop');
+window.addEventListener('scroll', () => {
+  toTop.classList.toggle('show', window.scrollY > 500);
+}, {passive:true});
+toTop.onclick = () => window.scrollTo({top:0, behavior:'smooth'});
+
+/* ============================================================
+   初始
+   ============================================================ */
+document.getElementById('continueBtn').onclick = goContinue;
+
+renderStageTabs();
+renderGradeTabs();
+renderInitialTabs();
+renderFilterTabs();
+renderGroupTabs();
+render();
+
+window.addEventListener('pageshow', () => {
+  render();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>识字学习 · 每天10字</title>
+<style>
+  :root{
+    --bg:#fdf6ec;
+    --card:#fff;
+    --ink:#3d2b1f;
+    --sub:#9a8774;
+    --accent:#ff8a3d;
+    --accent2:#ffb347;
+    --green:#4caf7a;
+    --green-dark:#2e7d54;
+    --shadow:0 8px 22px rgba(140,100,60,.10);
+    --shadow-lg:0 12px 28px rgba(140,100,60,.14);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0;min-height:100vh;
+    font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+    background:
+      radial-gradient(800px 360px at 8% 0%, #ffe7c9 0%, transparent 60%),
+      radial-gradient(600px 360px at 100% 100%, #ffd9e0 0%, transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    display:flex;justify-content:center;padding:14px;
+  }
+  .app{width:100%;max-width:480px;}
+
+  /* 顶部 */
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 12px;}
+  .back{
+    text-decoration:none;color:var(--sub);font-size:13px;font-weight:700;
+    background:#fff;padding:10px 16px;border-radius:999px;
+    box-shadow:0 3px 0 #eadbc9;
+  }
+  .back:active{transform:translateY(2px);box-shadow:0 1px 0 #eadbc9;}
+  .day-pill{
+    background:#fff;border:1.5px solid #ffe0c2;padding:9px 15px;
+    border-radius:999px;font-size:12px;font-weight:700;color:var(--accent);
+    box-shadow:var(--shadow);
+  }
+
+  /* 进度卡 */
+  .progress-card{
+    background:var(--card);border-radius:22px;padding:14px 16px;
+    box-shadow:var(--shadow);margin-bottom:12px;
+  }
+  .progress-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px;}
+  .progress-top span{color:var(--sub);}
+  .progress-top b{font-size:15px;color:var(--accent);}
+  .bar{height:10px;border-radius:999px;background:#f1e5d8;overflow:hidden;}
+  .bar>i{display:block;height:100%;width:0;border-radius:999px;transition:width .35s ease;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));}
+
+  /* 字卡 */
+  .char-card{
+    background:var(--card);border-radius:28px;box-shadow:var(--shadow-lg);
+    padding:26px 20px 20px;text-align:center;position:relative;overflow:hidden;
+    transition:box-shadow .3s;
+    animation:cardIn .3s ease;
+  }
+  @keyframes cardIn{
+    from{opacity:0;transform:translateX(20px);}
+    to{opacity:1;transform:none;}
+  }
+  .char-card.checked{
+    box-shadow:0 0 0 3px var(--green), 0 12px 28px rgba(76,175,122,.25);
+  }
+  .char-card::before{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(260px 140px at 50% 0%, #fff3e3 0%, transparent 70%);
+    pointer-events:none;transition:background .3s;
+  }
+  .char-card.checked::before{
+    background:radial-gradient(260px 140px at 50% 0%, #e6f7ec 0%, transparent 70%);
+  }
+  .pinyin{position:relative;font-size:20px;font-weight:600;color:var(--accent);letter-spacing:2px;min-height:28px;}
+  .hanzi{
+    position:relative;font-size:clamp(88px,28vw,128px);
+    line-height:1.05;font-weight:800;letter-spacing:4px;margin:2px 0;
+    color:#2f2117;text-shadow:0 5px 0 rgba(255,200,150,.35);
+  }
+  .word{position:relative;font-size:17px;font-weight:600;color:var(--green);margin-top:4px;min-height:22px;}
+  .sentence{position:relative;font-size:13px;color:var(--sub);margin-top:6px;line-height:1.6;min-height:20px;}
+
+  /* 打卡勾选按钮 */
+  .check-btn{
+    position:absolute;top:14px;right:14px;
+    width:56px;height:56px;border-radius:50%;
+    border:3px solid #eadbcc;background:#fff;
+    cursor:pointer;display:grid;place-items:center;
+    font-size:26px;font-weight:800;color:#d8cabc;
+    transition:all .25s cubic-bezier(.4,1.6,.6,1);
+    z-index:3;padding:0;line-height:1;
+    box-shadow:0 3px 0 #eadbcc;
+  }
+  .check-btn:active{transform:scale(.92);}
+  .check-btn.checked{
+    background:linear-gradient(135deg,#4caf7a,#6ed39c);
+    border-color:#4caf7a;color:#fff;
+    box-shadow:0 3px 0 #3a8f60;
+    transform:scale(1.06);
+  }
+  .check-btn.checked span{animation:checkIn .3s ease;}
+  @keyframes checkIn{
+    from{transform:scale(.3) rotate(-30deg);opacity:0;}
+    to{transform:none;opacity:1;}
+  }
+
+  /* 撒星 */
+  .particle{
+    position:fixed;width:10px;height:10px;border-radius:50%;
+    background:radial-gradient(circle,#fff 0%,#ffd76e 60%,transparent 70%);
+    pointer-events:none;z-index:100;
+    animation:burst .75s ease-out forwards;
+  }
+  @keyframes burst{
+    to{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0;}
+  }
+
+  /* 操作按钮 */
+  .actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px;}
+  .btn{
+    border:none;border-radius:16px;padding:14px 4px;
+    font-size:12px;font-weight:700;font-family:inherit;
+    background:#fff7ee;color:var(--ink);
+    box-shadow:0 4px 0 #eadbc9;cursor:pointer;transition:.12s;
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    min-height:62px;
+  }
+  .btn:active{transform:translateY(3px);box-shadow:none;}
+  .btn .ico{font-size:20px;line-height:1;}
+  .btn.play{background:linear-gradient(135deg,#ff9d55,#ff7a2f);color:#fff;box-shadow:0 4px 0 #d95f18;}
+  .btn.prev{background:#f0f0f5;color:#5a5a72;box-shadow:0 4px 0 #d8d8e0;}
+  .btn.next{background:#f3f0ff;color:#5b4bb7;box-shadow:0 4px 0 #d9d2f2;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+
+  /* 描红区 */
+  .trace-panel{
+    background:#fff;border-radius:22px;padding:14px;
+    box-shadow:var(--shadow);margin-top:12px;
+    animation:pop .25s ease;
+  }
+  @keyframes pop{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .trace-head{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--sub);margin-bottom:8px;}
+  .trace-head b{color:var(--accent);font-size:15px;}
+  #clearTrace{color:var(--accent);cursor:pointer;font-weight:700;padding:6px 10px;border-radius:10px;}
+  #traceCanvas{
+    border:2px dashed #ffd2aa;border-radius:16px;background:#fffdf8;
+    touch-action:none;display:block;margin:0 auto;max-width:100%;
+  }
+  .trace-tip{text-align:center;font-size:11px;color:#c4b5a5;margin-top:6px;}
+
+  /* 完成弹层 */
+  .finish{
+    position:fixed;inset:0;background:rgba(61,43,31,.4);
+    backdrop-filter:blur(6px);display:none;place-items:center;z-index:50;padding:22px;
+  }
+  .finish.show{display:grid;animation:fade .3s ease;}
+  @keyframes fade{from{opacity:0;}to{opacity:1;}}
+  .finish-box{
+    background:#fff;border-radius:28px;padding:32px 24px;text-align:center;
+    max-width:340px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.2);
+    animation:finishIn .4s cubic-bezier(.4,1.4,.6,1);
+  }
+  @keyframes finishIn{
+    from{transform:scale(.8);opacity:0;}
+    to{transform:none;opacity:1;}
+  }
+  .finish-box .big{font-size:60px;line-height:1;}
+  .finish-box h2{font-size:19px;margin:12px 0 6px;}
+  .finish-box p{font-size:13px;color:var(--sub);margin:0 0 20px;line-height:1.6;}
+  .finish-box p b{color:var(--green-dark);font-size:18px;}
+  .finish-box button{
+    border:none;border-radius:999px;padding:14px 30px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff;font-size:15px;font-weight:700;font-family:inherit;
+    cursor:pointer;box-shadow:0 5px 0 #d95f18;min-height:50px;
+  }
+  .finish-box button:active{transform:translateY(3px);box-shadow:0 2px 0 #d95f18;}
+
+  .empty-tip{text-align:center;padding:60px 20px;font-size:14px;color:var(--sub);line-height:1.7;}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="topbar">
+    <a class="back" href="index.html">← 全部汉字</a>
+    <div class="day-pill" id="dayPill">第 1 天</div>
+  </div>
+
+  <div class="progress-card">
+    <div class="progress-top">
+      <span>今日打卡</span>
+      <span><b id="doneCount">0</b> / <span id="totalCount">10</span></span>
+    </div>
+    <div class="bar"><i id="barFill"></i></div>
+  </div>
+
+  <div id="main"></div>
+</div>
+
+<div class="finish" id="finishLayer">
+  <div class="finish-box">
+    <div class="big">🎉</div>
+    <h2>今天的 10 个字打卡完成！</h2>
+    <p>一共打卡 <b id="finishCount">0</b> 个字</p>
+    <button id="backAll">回到全部汉字</button>
+  </div>
+</div>
+
+<script src="chars.js"></script>
+<script>
+/* ============================================================
+   存储：已学 = 打卡成功
+   ============================================================ */
+const STORAGE = {
+  getLearned(){
+    try{ return JSON.parse(localStorage.getItem('learnedChars') || '[]'); }
+    catch(e){ return []; }
+  },
+  addLearned(id){
+    const arr = this.getLearned();
+    if(!arr.includes(id)){
+      arr.push(id);
+      localStorage.setItem('learnedChars', JSON.stringify(arr));
+    }
+  },
+  removeLearned(id){
+    const arr = this.getLearned().filter(x => x !== id);
+    localStorage.setItem('learnedChars', JSON.stringify(arr));
+  }
+};
+
+/* ============================================================
+   今日 10 字
+   ============================================================ */
+const params = new URLSearchParams(location.search);
+const targetId = params.get('id') ? Number(params.get('id')) : null;
+
+function getTodayChars(){
+  if(targetId){
+    const idx = CHARS.findIndex(c => c.id === targetId);
+    if(idx >= 0) return CHARS.slice(idx, idx + 10);
+  }
+  const learned = STORAGE.getLearned();
+  return CHARS.filter(c => !learned.includes(c.id)).slice(0, 10);
+}
+
+let todayChars = getTodayChars();
+let pos = 0;
+let learnedToday = new Set();
+
+// 同步今天字组里已打卡的字
+const learnedAll = STORAGE.getLearned();
+todayChars.forEach(c => {
+  if(learnedAll.includes(c.id)) learnedToday.add(c.id);
+});
+
+const main = document.getElementById('main');
+let ctx = null, drawing = false, canvasReady = false, globalBound = false;
+
+/* ============================================================
+   渲染
+   ============================================================ */
+function render(){
+  if(!todayChars.length){
+    main.innerHTML = '<div class="empty-tip">没有更多字了。<br>去 chars.js 里继续添加吧。</div>';
+    updateProgress();
+    return;
+  }
+
+  const c = todayChars[pos];
+  const checked = learnedToday.has(c.id);
+  const dayNo = Math.floor(CHARS.findIndex(x => x.id === c.id) / 10) + 1;
+
+  document.getElementById('dayPill').textContent = `第 ${dayNo} 天`;
+  updateProgress();
+
+  main.innerHTML = `
+    <div class="char-card ${checked ? 'checked' : ''}" id="charCard">
+      <button class="check-btn ${checked ? 'checked' : ''}" id="checkBtn" aria-label="打卡">
+        <span>✓</span>
+      </button>
+      <div class="pinyin">${c.p || ''}</div>
+      <div class="hanzi">${c.h}</div>
+      <div class="word">${c.w || ''}</div>
+      <div class="sentence">${c.s || ''}</div>
+    </div>
+
+    <div class="actions">
+      <button class="btn play" id="speakBtn"><span class="ico">🔊</span>读一读</button>
+      <button class="btn prev" id="prevBtn" ${pos === 0 ? 'disabled' : ''}><span class="ico">⬅️</span>上一个</button>
+      <button class="btn next" id="nextBtn"><span class="ico">➡️</span>下一个</button>
+      <button class="btn" id="backBtn"><span class="ico">📚</span>总览</button>
+    </div>
+
+    <div class="trace-panel">
+      <div class="trace-head">
+        <span>✍️ 描一描：<b>${c.h}</b></span>
+        <span id="clearTrace">清空</span>
+      </div>
+      <canvas id="traceCanvas" width="280" height="280"></canvas>
+      <div class="trace-tip">用手指或鼠标沿着虚线描一描</div>
+    </div>
+  `;
+
+  canvasReady = false;
+
+  document.getElementById('speakBtn').onclick = () => { haptic(8); speak(); };
+  document.getElementById('backBtn').onclick = () => location.href = 'index.html';
+  document.getElementById('nextBtn').onclick = () => { haptic(8); next(); };
+  document.getElementById('prevBtn').onclick = prev;
+  document.getElementById('checkBtn').onclick = onCheckBtn;
+  document.getElementById('clearTrace').onclick = clearCanvas;
+
+  initCanvas();
+}
+
+function updateProgress(){
+  const total = todayChars.length || 10;
+  const dc = document.getElementById('doneCount');
+  if(!dc) return;
+  dc.textContent = learnedToday.size;
+  document.getElementById('totalCount').textContent = total;
+  document.getElementById('barFill').style.width = `${(learnedToday.size / total) * 100}%`;
+}
+
+/* ============================================================
+   打卡勾选
+   ============================================================ */
+function updateCheckUI(checked){
+  const card = document.getElementById('charCard');
+  const btn = document.getElementById('checkBtn');
+  if(card) card.classList.toggle('checked', checked);
+  if(btn) btn.classList.toggle('checked', checked);
+}
+
+function onCheckBtn(){
+  const c = todayChars[pos];
+  if(!c) return;
+  const btn = document.getElementById('checkBtn');
+
+  if(learnedToday.has(c.id)){
+    // 取消打卡
+    learnedToday.delete(c.id);
+    STORAGE.removeLearned(c.id);
+    updateCheckUI(false);
+    updateProgress();
+    haptic(8);
+    return;
+  }
+
+  // 打卡成功
+  learnedToday.add(c.id);
+  STORAGE.addLearned(c.id);
+  updateCheckUI(true);
+  updateProgress();
+  playDing();
+  burstAt(btn);
+  haptic(20);
+
+  // 延迟自动下一个，留出反悔时间
+  const watchId = c.id;
+  setTimeout(() => {
+    if(
+      todayChars[pos] &&
+      todayChars[pos].id === watchId &&
+      learnedToday.has(watchId)
+    ){
+      next(true);
+    }
+  }, 1200);
+}
+
+/* ============================================================
+   上一个 / 下一个
+   ============================================================ */
+function prev(){
+  if(pos <= 0) return;
+  pos--;
+  render();
+  speak();
+}
+
+function next(auto){
+  const c = todayChars[pos];
+  if(!c) return;
+
+  // 没勾选就直接下一个，也算打卡
+  if(!learnedToday.has(c.id)){
+    learnedToday.add(c.id);
+    STORAGE.addLearned(c.id);
+  }
+  updateProgress();
+
+  if(pos >= todayChars.length - 1){
+    finish();
+    return;
+  }
+
+  pos++;
+  render();
+  if(!auto) speak();
+}
+
+function finish(){
+  document.getElementById('finishCount').textContent = learnedToday.size;
+  document.getElementById('finishLayer').classList.add('show');
+  playWin();
+}
+
+/* ============================================================
+   语音
+   ============================================================ */
+function speak(){
+  if(!('speechSynthesis' in window)) return;
+  const c = todayChars[pos];
+  if(!c) return;
+  speechSynthesis.cancel();
+
+  let text = c.h;
+  if(c.w) text += `，${c.w}`;
+  if(c.s) text += `。${c.s}`;
+
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'zh-CN';
+  u.rate = 0.75;
+  u.pitch = 1.05;
+  speechSynthesis.speak(u);
+}
+
+/* ============================================================
+   音效
+   ============================================================ */
+let audioCtx = null;
+function getAudio(){
+  if(!audioCtx){
+    try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch(e){ return null; }
+  }
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playDing(){
+  const ac = getAudio();
+  if(!ac) return;
+  const osc = ac.createOscillator();
+  const gain = ac.createGain();
+  osc.connect(gain);
+  gain.connect(ac.destination);
+  osc.frequency.setValueAtTime(880, ac.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(1320, ac.currentTime + 0.1);
+  osc.type = 'sine';
+  gain.gain.setValueAtTime(0.001, ac.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.25, ac.currentTime + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.5);
+  osc.start();
+  osc.stop(ac.currentTime + 0.5);
+}
+
+function playWin(){
+  const ac = getAudio();
+  if(!ac) return;
+  [523, 659, 784, 1047].forEach((f, i) => {
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain);
+    gain.connect(ac.destination);
+    osc.frequency.value = f;
+    osc.type = 'sine';
+    const t = ac.currentTime + i * 0.12;
+    gain.gain.setValueAtTime(0.001, t);
+    gain.gain.exponentialRampToValueAtTime(0.2, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+    osc.start(t);
+    osc.stop(t + 0.35);
+  });
+}
+
+function haptic(ms){
+  if(navigator.vibrate) navigator.vibrate(ms);
+}
+
+/* ============================================================
+   撒星
+   ============================================================ */
+function burstAt(el){
+  if(!el) return;
+  const r = el.getBoundingClientRect();
+  const cx = r.left + r.width / 2;
+  const cy = r.top + r.height / 2;
+  for(let i = 0; i < 8; i++){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const angle = (Math.PI * 2 * i) / 8 + Math.random() * 0.5;
+    const dist = 40 + Math.random() * 40;
+    p.style.left = cx + 'px';
+    p.style.top = cy + 'px';
+    p.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+    p.style.setProperty('--dy', `${Math.sin(angle) * dist}px`);
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 800);
+  }
+}
+
+/* ============================================================
+   描红画布
+   ============================================================ */
+function initCanvas(){
+  const canvas = document.getElementById('traceCanvas');
+  if(!canvas) return;
+
+  ctx = canvas.getContext('2d');
+  ctx.lineWidth = 16;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = 'rgba(255,138,61,.6)';
+  canvasReady = true;
+
+  const posOf = e => {
+    const r = canvas.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return {
+      x: (t.clientX - r.left) * (canvas.width / r.width),
+      y: (t.clientY - r.top) * (canvas.height / r.height)
+    };
+  };
+
+  canvas.addEventListener('mousedown', e => {
+    e.preventDefault();
+    drawing = true;
+    const p = posOf(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  });
+  canvas.addEventListener('mousemove', e => {
+    if(!drawing) return;
+    const p = posOf(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  });
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    drawing = true;
+    const p = posOf(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  }, {passive:false});
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if(!drawing) return;
+    const p = posOf(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  }, {passive:false});
+
+  if(!globalBound){
+    window.addEventListener('mouseup', () => drawing = false);
+    window.addEventListener('touchend', () => drawing = false);
+    globalBound = true;
+  }
+}
+
+function clearCanvas(){
+  const canvas = document.getElementById('traceCanvas');
+  if(canvas && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+/* ============================================================
+   弹层
+   ============================================================ */
+document.getElementById('backAll').onclick = () => location.href = 'index.html';
+
+/* ============================================================
+   初始
+   ============================================================ */
+render();
+if(todayChars.length) speak();
+</script>
+</body>
+</html>
