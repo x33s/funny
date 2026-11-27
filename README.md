@@ -4,7 +4,7 @@
 
 纯原生 HTML / CSS / JavaScript · 无框架 · 无依赖 · 双击即玩
 
-[🌐 在线体验](https://x33s.github.io/funny/) · [🐛 Issue](https://github.com/x33s/funny/issues) · [⭐ Star](https://github.com/x33s/funny)
+ 
 
 ---
 
